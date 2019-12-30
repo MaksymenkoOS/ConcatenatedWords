@@ -12,9 +12,7 @@ public class FileWorker {
 
         LinkedList<String> rows = new LinkedList<>();
 
-        Files.lines(Paths.get("src/main/resources/words.txt"), StandardCharsets.UTF_8).forEach(str -> {
-            rows.add(str);
-        });
+        Files.lines(Paths.get("src/main/resources/words.txt"), StandardCharsets.UTF_8).forEach(rows::add);
 
         return rows;
     }
