@@ -19,7 +19,9 @@ public class ConcatenatedWordsFinder {
 
         assert words != null;
         for(Map.Entry entry : words.entrySet()) {
+
             word = entry.getKey().toString();
+
             if(isWordConcatenated(word, words)) {
                 concatenatedWords.add(word);
             }
@@ -67,22 +69,44 @@ public class ConcatenatedWordsFinder {
 
     private Boolean isWordConcatenated(String word, Map<String, Integer> map) {
 
-        StringBuilder result = new StringBuilder();
-        int repeated = 0;
+        LinkedList<String> foundedWords = new LinkedList<>();
 
         for(int s = 0, e = 0; e <= word.length(); e++) {
+            if (map.containsKey(word.substring(s, e))) {
+                foundedWords.add(word.substring(s, e));
+            }
+        }
 
-            if(map.containsKey(word.substring(s, e))) {
-                result.append(word, s, e);
+        if(foundedWords.size() == 0) {
+            return false;
+        }
 
-                repeated++;
-                s = e;
-                e++;
+        int iterations = 0;
+        while (foundedWords.size() != 0) {
+
+            for(String variant : new LinkedList<>(foundedWords)) {
+
+                iterations++;
+
+                if(variant.equals(word) && iterations > 1) {
+                    return true;
+                }
+
+                for(int s = variant.length(), e = (variant.length() + 1); e <= word.length(); e++) {
+
+                    if(map.containsKey(word.substring(s, e))) {
+                        foundedWords.add(variant + word.substring(s, e));
+                    }
+
+                }
+
+                foundedWords.remove(variant);
+
             }
 
         }
 
-        return word.equals(result.toString()) && repeated > 1;
+        return false;
 
     }
 

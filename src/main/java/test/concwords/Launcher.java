@@ -13,6 +13,5 @@ public class Launcher {
         System.out.println("2nd longest(" + secondLongest.length() + " symbols) - " + secondLongest);
         System.out.println("Total count of concatenated words - " + finder.getTotalCountOfConcatenatenatedWords());
 
-
     }
 }
