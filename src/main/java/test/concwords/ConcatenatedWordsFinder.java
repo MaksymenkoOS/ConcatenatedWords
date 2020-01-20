@@ -17,6 +17,20 @@ public class ConcatenatedWordsFinder {
 
         String word;
 
+        //***
+        try {
+            FileIO.clearConc();
+            FileIO.clearNonConc();
+            FileIO.clearLog();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int concRow = 1;
+        int nonConcRow = 1;
+
+        //***
+
         assert words != null;
         for(Map.Entry entry : words.entrySet()) {
 
@@ -24,6 +38,26 @@ public class ConcatenatedWordsFinder {
 
             if(isWordConcatenated(word, words)) {
                 concatenatedWords.add(word);
+
+                //***
+                concRow++;
+
+                try {
+                    FileIO.writeConc(concRow + " - " + word + " - (" + word.length() + ")");
+                } catch (IOException e) {
+                    System.out.println("problem to write conc");
+                }
+                //***
+            } else {
+
+                //***
+                try {
+                    FileIO.writeNonConc(nonConcRow + " - " + word + " - (" + word.length() + ")");
+                    nonConcRow++;
+                } catch (IOException e) {
+                    System.out.println("problem to write nonConc");
+                }
+                //***
             }
         }
 
@@ -69,45 +103,99 @@ public class ConcatenatedWordsFinder {
 
     private Boolean isWordConcatenated(String word, Map<String, Integer> map) {
 
+        LinkedList<String> history = new LinkedList<>();
+        history.add("---------");
+        history.add("WORD: " + word);
+        history.add("start variants:");
+
         LinkedList<String> foundedWords = new LinkedList<>();
 
-        for(int s = 0, e = 0; e <= word.length(); e++) {
-            if (map.containsKey(word.substring(s, e))) {
-                foundedWords.add(word.substring(s, e));
+        for(int s = 0, e = 1; e < word.length(); e++) {
+
+            String varian = word.substring(s, e);
+
+            if (map.containsKey(varian)) {
+                foundedWords.add(varian);
+                history.add("add to foundedWords variant: " + varian);
             }
         }
 
-        if(foundedWords.size() == 0) {
-            return false;
-        }
-
         int iterations = 0;
+        int itWhile = 0;
+
         while (foundedWords.size() != 0) {
+
+            history.add("while cycle #" + itWhile);
+            history.add("foundedWords list ---");
+            history.add(foundedWords.toString());
+            history.add("foundedWords list ---");
 
             for(String variant : new LinkedList<>(foundedWords)) {
 
-                iterations++;
-
-                if(variant.equals(word) && iterations > 1) {
-                    return true;
-                }
-
                 for(int s = variant.length(), e = (variant.length() + 1); e <= word.length(); e++) {
 
-                    if(map.containsKey(word.substring(s, e))) {
-                        foundedWords.add(variant + word.substring(s, e));
+                    String subStr = word.substring(s, e);
+
+                    if(map.containsKey(subStr)) {
+                        foundedWords.add(variant + subStr);
+                        iterations++;
+
+                        history.add("add new variant: " + variant + " + " + subStr);
+                        history.add("foundedWords after adding---");
+                        history.add(foundedWords.toString());
                     }
 
                 }
 
+                if(variant.equals(word) && iterations > 1) {
+
+                    history.add("variant (" + variant + ") equals word (" + word + ")");
+                    history.add("and iterations = " + iterations);
+                    history.add("so word is CONCATENATED");
+                    history.add("and length is " + word.length());
+
+                    try {
+                        for(String s : history) {
+                            FileIO.writeLog(s);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    return true;
+                }
+
                 foundedWords.remove(variant);
+                history.add("remove from foundedWords variant: " + variant);
+                history.add("foundedWords after removing---");
+                history.add(foundedWords.toString());
 
             }
 
+            itWhile++;
+
+        }
+
+        history.add("word is NOT concatenated");
+
+        try {
+            for(String s : history) {
+                FileIO.writeLog(s);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return false;
 
     }
+
+    public Boolean checkWord(String word) {
+        Map<String, Integer> words = downloadWordsFromFile();
+
+        return isWordConcatenated(word, words);
+
+    }
+
 
 }
