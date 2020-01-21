@@ -44,14 +44,14 @@ public class ConcatenatedWordsFinder {
         return seconds;
     }
 
-    public int getTotalCountOfConcatenatenatedWords() {
+    public int getTotalCountOfConcatenatedWords() {
         return concatenatedWords.size();
     }
 
     private Map<String, Integer> downloadWordsFromFile() {
 
         LinkedList<String> wordsFromFile;
-        Map<String, Integer> unsortedMap = new HashMap<>();
+        Map<String, Integer> unsortedWordsMap = new HashMap<>();
 
         try {
             wordsFromFile = FileWorker.read();
@@ -61,14 +61,14 @@ public class ConcatenatedWordsFinder {
         }
 
         for (String string : wordsFromFile) {
-            unsortedMap.put(string, string.length());
+            unsortedWordsMap.put(string, string.length());
         }
 
-        return sortByValueReversed(unsortedMap);
+        return sortByValueReversed(unsortedWordsMap);
     }
 
-    private Map<String, Integer> sortByValueReversed(Map<String, Integer> wordCounts) {
-        return wordCounts.entrySet()
+    private Map<String, Integer> sortByValueReversed(Map<String, Integer> unsortedMap) {
+        return unsortedMap.entrySet()
                 .stream()
                 .sorted((Map.Entry.<String, Integer>comparingByValue().reversed()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
@@ -78,25 +78,27 @@ public class ConcatenatedWordsFinder {
 
         LinkedHashMap<String, Integer> foundedWordsMap = new LinkedHashMap<>();
 
-        for(int s = 0, e = 1; e < word.length(); e++) {
+        for(int start = 0, end = 1; end < word.length(); end++) {
 
-            String variant = word.substring(s, e);
+            String variant = word.substring(start, end);
 
             if (map.containsKey(variant)) {
                 foundedWordsMap.put(variant, 1);
             }
+
         }
 
         while (foundedWordsMap.size() != 0) {
 
             for(Map.Entry variant : new LinkedHashMap<>(foundedWordsMap).entrySet()) {
 
-                for(int s = variant.getKey().toString().length(), e = (variant.getKey().toString().length() + 1); e <= word.length(); e++) {
+                int startPosition = variant.getKey().toString().length();
+                int endPosition = (variant.getKey().toString().length() + 1);
 
-                    String subStr = word.substring(s, e);
+                for(int start = startPosition, end = endPosition; end <= word.length(); end++) {
 
-                    if(map.containsKey(subStr)) {
-                        String newKey = variant.getKey() + subStr;
+                    if(map.containsKey(word.substring(start, end))) {
+                        String newKey = variant.getKey() + word.substring(start, end);
                         Integer newValue = (Integer) variant.getValue() + 1;
 
                         foundedWordsMap.put(newKey, newValue);
